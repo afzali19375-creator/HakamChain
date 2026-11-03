@@ -43,13 +43,21 @@
         <dd class="font-mono" dir="ltr">#<%= kase.escrowId == null ? '-' : kase.escrowId %></dd>
       </div>
       <div class="rounded-xl bg-stone-50 border border-stone-100 p-4 sm:col-span-2">
-        <dt class="text-xs text-stone-400 mb-1">تراکنش‌ها روی Sepolia</dt>
+        <dt class="text-xs text-stone-400 mb-1">تراکنش‌ها روی <%= net.name %></dt>
         <dd class="flex flex-wrap gap-4 text-xs">
           <% if (kase.fundingTxHash) { %>
-            <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="https://sepolia.etherscan.io/tx/<%= kase.fundingTxHash %>">funding ↗</a>
+            <% if (net.explorerTx) { %>
+              <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="<%= net.explorerTx %><%= kase.fundingTxHash %>">funding ↗</a>
+            <% } else { %>
+              <span class="text-emerald-700 font-mono" dir="ltr" title="<%= kase.fundingTxHash %>">funding ✓</span>
+            <% } %>
           <% } %>
           <% if (kase.resolveTxHash) { %>
-            <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="https://sepolia.etherscan.io/tx/<%= kase.resolveTxHash %>">resolve ↗</a>
+            <% if (net.explorerTx) { %>
+              <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="<%= net.explorerTx %><%= kase.resolveTxHash %>">resolve ↗</a>
+            <% } else { %>
+              <span class="text-emerald-700 font-mono" dir="ltr" title="<%= kase.resolveTxHash %>">resolve ✓</span>
+            <% } %>
           <% } %>
           <% if (!kase.fundingTxHash && !kase.resolveTxHash) { %><span class="text-stone-400">—</span><% } %>
         </dd>
@@ -107,7 +115,7 @@
       <p class="mt-1 text-sm text-stone-500 leading-6">
         پس از بررسی فقهی/فنی شواهد، حکم را ثبت کنید. با کلیک روی هر دکمه، بک‌اند با ولت ادمین تابع
         <code class="font-mono text-xs" dir="ltr">releaseFunds(<%= kase.escrowId == null ? 'id' : kase.escrowId %>, …)</code>
-        را روی شبکه Sepolia اجرا می‌کند و وجه مستقیماً به ولت برنده منتقل می‌شود.
+        را روی شبکه <%= net.name %> اجرا می‌کند و وجه مستقیماً به ولت برنده منتقل می‌شود.
       </p>
     </div>
 
@@ -137,7 +145,7 @@
             تایید و آزادسازی وجه به مجری
           </button>
         </div>
-        <p class="text-xs text-stone-400 leading-5">هشدار: این عملیات تراکنش واقعی روی Sepolia صادر می‌کند و کارمزد گاز از ولت ادمین کسر می‌شود. این حکم پس از اجرا قابل بازگشت نیست.</p>
+        <p class="text-xs text-stone-400 leading-5">هشدار: این عملیات تراکنش واقعی روی <%= net.name %> صادر می‌کند و کارمزد گاز از ولت ادمین کسر می‌شود. این حکم پس از اجرا قابل بازگشت نیست.</p>
         <p id="resolve-result" class="text-sm hidden rounded-xl px-4 py-3"></p>
       </div>
     <% } %>

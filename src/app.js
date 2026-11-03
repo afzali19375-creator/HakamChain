@@ -61,6 +61,17 @@ app.use(
   rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: true, legacyHeaders: false })
 );
 
+// Network metadata available to every EJS view — shows "Sepolia" on the
+// real testnet and "شبکه محلی (31337)" when running against Hardhat locally.
+app.use((req, res, next) => {
+  res.locals.net = {
+    id: env.chainId,
+    name: env.chainId === 11155111 ? 'Sepolia' : `شبکه محلی (${env.chainId})`,
+    explorerTx: env.chainId === 11155111 ? 'https://sepolia.etherscan.io/tx/' : null,
+  };
+  next();
+});
+
 app.use('/api', apiRoutes);
 app.use('/', pagesRoutes);
 

@@ -47,7 +47,7 @@
                 class="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 transition shadow-sm">
           ایجاد قرارداد و قفل وجه
         </button>
-        <p class="text-xs text-stone-400 leading-5">با کلیک، ابتدا تراکنش واریز در MetaMask باز می‌شود؛ پس از تایید شبکه، پرونده ثبت می‌شود (کارمزد گاز Sepolia از کیف پول شما کسر می‌شود).</p>
+        <p class="text-xs text-stone-400 leading-5">با کلیک، ابتدا تراکنش واریز در MetaMask باز می‌شود؛ پس از تایید شبکه، پرونده ثبت می‌شود (کارمزد گاز از کیف پول شما کسر می‌شود).</p>
       </div>
     </form>
   </section>
@@ -91,12 +91,20 @@
 
           <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
             <% if (c.fundingTxHash) { %>
-              <a href="https://sepolia.etherscan.io/tx/<%= c.fundingTxHash %>" target="_blank" rel="noopener"
-                 class="text-emerald-700 hover:underline" dir="ltr">tx: funding ↗</a>
+              <% if (net.explorerTx) { %>
+                <a href="<%= net.explorerTx %><%= c.fundingTxHash %>" target="_blank" rel="noopener"
+                   class="text-emerald-700 hover:underline" dir="ltr">tx: funding ↗</a>
+              <% } else { %>
+                <span class="text-emerald-700 font-mono" dir="ltr" title="<%= c.fundingTxHash %>">tx: funding ✓</span>
+              <% } %>
             <% } %>
             <% if (c.resolveTxHash) { %>
-              <a href="https://sepolia.etherscan.io/tx/<%= c.resolveTxHash %>" target="_blank" rel="noopener"
-                 class="text-emerald-700 hover:underline" dir="ltr">tx: resolve ↗</a>
+              <% if (net.explorerTx) { %>
+                <a href="<%= net.explorerTx %><%= c.resolveTxHash %>" target="_blank" rel="noopener"
+                   class="text-emerald-700 hover:underline" dir="ltr">tx: resolve ↗</a>
+              <% } else { %>
+                <span class="text-emerald-700 font-mono" dir="ltr" title="<%= c.resolveTxHash %>">tx: resolve ✓</span>
+              <% } %>
             <% } %>
             <span class="text-stone-400">شواهد ثبت‌شده: <%= (c.evidence || []).length %></span>
           </div>

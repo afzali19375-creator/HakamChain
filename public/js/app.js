@@ -18,13 +18,65 @@
   const pageDataEl = document.getElementById('page-data');
   const PAGE = pageDataEl ? JSON.parse(pageDataEl.textContent) : {};
 
-  const SEPOLIA = {
-    chainId: '0xaa36a7', // 11155111
-    chainName: 'Sepolia',
-    nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
+  // Network info comes from THIS server, so the same UI works both on the
+  // real Sepolia testnet and on a local Hardhat chain (chainId 31337).
+  // MetaMask network identity = RPC URL + chainId, so for the local chain we
+  // offer to add a "HakamChain Local" network pointing at http://127.0.0.1:8545.
+  let NET = null;
+  const SEPOLIA_NET = {
+    chainIdHex: '0xaa36a7', // 11155111
+    name: 'Sepolia',
     rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com'],
-    blockExplorerUrls: ['https://sepolia.etherscan.io'],
+    explorer: ['https://sepolia.etherscan.io'],
   };
+  const LOCAL_NET_TEMPLATE = (id) => ({
+    chainIdHex: `0x${id.toString(16)}`,
+    name: `HakamChain Local (${id})`,
+    rpcUrls: ['http://127.0.0.1:8545'],
+    explorer: [],
+  });
+
+  async function loadNetwork() {
+    if (NET) return NET;
+    try {
+      const cfg = await api('/api/config');
+      const id = Number(cfg.chainId) || 11155111;
+      NET = id === 11155111 ? SEPOLIA_NET : LOCAL_NET_TEMPLATE(id);
+    } catch {
+      NET = SEPOLIA_NET;
+    }
+    return NET;
+  }
+
+  async function ensureNetwork() {
+    const provider = await getWallet();
+    const net = await loadNetwork();
+    const current = await provider.request({ method: 'eth_chainId' });
+    if (current === net.chainIdHex) return;
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: net.chainIdHex }],
+      });
+    } catch (err) {
+      if (err && err.code === 4902) {
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: net.chainIdHex,
+              chainName: net.name,
+              nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+              rpcUrls: net.rpcUrls,
+              blockExplorerUrls: net.explorer,
+            },
+          ],
+        });
+      } else {
+        throw new Error(`لطفاً کیف پول را روی شبکه ${net.name} قرار دهید.`);
+      }
+    }
+  }
 
   async function getWallet() {
     if (!window.ethereum) {
@@ -33,29 +85,11 @@
     return window.ethereum;
   }
 
-  async function ensureSepolia() {
-    const provider = await getWallet();
-    const current = await provider.request({ method: 'eth_chainId' });
-    if (current === SEPOLIA.chainId) return;
-    try {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: SEPOLIA.chainId }],
-      });
-    } catch (err) {
-      if (err && err.code === 4902) {
-        await provider.request({ method: 'wallet_addEthereumChain', params: [SEPOLIA] });
-      } else {
-        throw new Error('لطفاً کیف پول را روی شبکه Sepolia قرار دهید.');
-      }
-    }
-  }
-
   async function connect() {
     const provider = await getWallet();
     const accounts = await provider.request({ method: 'eth_requestAccounts' });
     if (!accounts || !accounts.length) throw new Error('هیچ حسابی در کیف پول انتخاب نشد.');
-    await ensureSepolia();
+    await ensureNetwork();
     return accounts[0];
   }
 
@@ -159,7 +193,7 @@
     btn.addEventListener('click', async () => {
       setBusy(btn, true, 'در حال اتصال…');
       try {
-        say('اتصال کیف پول و بررسی شبکه Sepolia…');
+        say('اتصال کیف پول و بررسی شبکه…');
         const address = (await connect()).toLowerCase();
 
         say('دریافت پیام ورود (SIWE)…');

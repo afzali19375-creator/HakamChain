@@ -23,7 +23,7 @@
       <div class="mt-6 rounded-xl bg-stone-50 border border-stone-200 p-4 text-xs text-stone-500 leading-6">
         <p class="font-semibold text-stone-700 mb-1">مراحل ورود:</p>
         <ol class="list-decimal ps-5 space-y-0.5">
-          <li>اتصال کیف پول MetaMask و اطمینان از بودن روی شبکه <b>Sepolia</b></li>
+          <li>اتصال کیف پول MetaMask و اطمینان از بودن روی شبکه <b><%= net.name %></b></li>
           <li>امضای پیام ورود (بدون کارمزد)</li>
           <li>تایید هویت سمت سرور و ساخت نشست امن</li>
         </ol>
@@ -31,7 +31,11 @@
       </div>
     </div>
     <p class="mt-4 text-center text-xs text-stone-400">
-      کیف پول ندارید؟ <span dir="ltr">MetaMask</span> را نصب کنید و از فاست‌های رایگان، اتر آزمایشی Sepolia بگیرید.
+      <% if (net.explorerTx) { %>
+        کیف پول ندارید؟ <span dir="ltr">MetaMask</span> را نصب کنید و از فاست‌های رایگان، اتر آزمایشی Sepolia بگیرید.
+      <% } else { %>
+        برای دموی لوکال نیازی به فاست نیست؛ بلاکچین محلی Hardhat به هر حساب ۱۰٬۰۰۰ اتر آزمایشی می‌دهد.
+      <% } %>
     </p>
   </div>
 </main>
