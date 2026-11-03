@@ -1,0 +1,135 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-8">
+
+  <% if (!pageData.web3Ready) { %>
+    <div class="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm">
+      قرارداد هوشمند هنوز پیکربندی نشده است. برای فعال‌شدن تراکنش‌ها، ابتدا قرارداد را دیپلوی کنید و سپس
+      <span dir="ltr" class="font-mono">CONTRACT_ADDRESS</span> و <span dir="ltr" class="font-mono">ADMIN_PRIVATE_KEY</span> را در فایل <span dir="ltr" class="font-mono">.env</span> تنظیم کنید.
+    </div>
+  <% } %>
+
+  <!-- ============ ایجاد پرونده جدید ============ -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm">
+    <div class="p-6 border-b border-stone-100">
+      <h1 class="text-lg font-extrabold text-stone-900">ایجاد پرونده جدید و قفل وجه در امانت</h1>
+      <p class="mt-1 text-sm text-stone-500 leading-6">
+        مبلغ توافق‌شده با مجری را در قرارداد هوشمند قفل کنید. وجه تا صدور حکم حَکَم هیچ‌کدام از طرفین به تنهایی نمی‌تواند بردارد.
+        سقف هر واریز برای حاشیه امن تست‌نت <b dir="ltr">0.05 ETH</b> است.
+      </p>
+    </div>
+    <form id="form-create-case" class="p-6 grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-stone-700 mb-1">عنوان پرونده</label>
+        <input id="f-title" type="text" maxlength="200" required placeholder="مثلاً: طراحی سایت فروشگاهی"
+               class="w-full rounded-xl border-stone-300 border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-stone-700 mb-1">شرح توافق و تعهدات</label>
+        <textarea id="f-desc" rows="3" required placeholder="خواسته، زمان‌بندی تحویل، مبلغ توافقی و هر شرط مهم دیگر…"
+                  class="w-full rounded-xl border-stone-300 border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">آدرس کیف پول مجری</label>
+        <input id="f-contractor" type="text" dir="ltr" required placeholder="0x…"
+               class="w-full rounded-xl border-stone-300 border px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">مبلغ امانت (ETH)</label>
+        <input id="f-amount" type="text" dir="ltr" inputmode="decimal" required placeholder="0.01"
+               class="w-full rounded-xl border-stone-300 border px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+        <p class="mt-1 text-xs text-stone-400">حداکثر مجاز: <span id="max-deposit-hint" dir="ltr">0.05 ETH</span></p>
+      </div>
+      <p id="create-error" class="sm:col-span-2 hidden rounded-lg bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 text-sm"></p>
+      <div class="sm:col-span-2 flex flex-col sm:flex-row items-center gap-3">
+        <button type="submit" <%= pageData.web3Ready ? '' : 'disabled' %>
+                class="rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 transition shadow-sm">
+          ایجاد قرارداد و قفل وجه
+        </button>
+        <p class="text-xs text-stone-400 leading-5">با کلیک، ابتدا تراکنش واریز در MetaMask باز می‌شود؛ پس از تایید شبکه، پرونده ثبت می‌شود (کارمزد گاز Sepolia از کیف پول شما کسر می‌شود).</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ فهرست پرونده‌های من ============ -->
+  <section>
+    <h2 class="text-lg font-extrabold text-stone-900 mb-4">پرونده‌های من</h2>
+    <% if (cases.length === 0) { %>
+      <div class="bg-white rounded-2xl border border-dashed border-stone-300 p-10 text-center text-stone-400 text-sm">
+        هنوز پرونده‌ای ندارید. با فرم بالا اولین امانت‌گذاری را ثبت کنید.
+      </div>
+    <% } %>
+
+    <div class="grid gap-4">
+      <% cases.forEach(function (c) { %>
+        <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold text-stone-900"><%= c.title %> <span class="text-stone-300 font-mono text-xs" dir="ltr">#<%= c.id %></span></h3>
+            <span class="rounded-full border px-2.5 py-1 text-xs font-semibold <%= statusClass[c.status] %>"><%= statusFa[c.status] %></span>
+          </div>
+          <p class="mt-2 text-sm text-stone-600 leading-6 line-clamp-2"><%= c.description %></p>
+
+          <dl class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-2.5">
+              <dt class="text-stone-400">نقش من</dt>
+              <dd class="font-semibold text-stone-700 mt-0.5"><%= c.employerAddress === address ? 'کارفرما' : 'مجری' %></dd>
+            </div>
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-2.5">
+              <dt class="text-stone-400">طرف مقابل</dt>
+              <dd class="font-mono mt-0.5" dir="ltr"><%= (c.employerAddress === address ? c.contractorAddress : c.employerAddress).slice(0, 6) %>…<%= (c.employerAddress === address ? c.contractorAddress : c.employerAddress).slice(-4) %></dd>
+            </div>
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-2.5">
+              <dt class="text-stone-400">مبلغ امانت</dt>
+              <dd class="font-mono font-semibold text-emerald-700 mt-0.5" dir="ltr"><%= c.amountEth %> ETH</dd>
+            </div>
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-2.5">
+              <dt class="text-stone-400">شناسه قرارداد</dt>
+              <dd class="font-mono mt-0.5" dir="ltr"><%= c.escrowId == null ? '-' : '#' + c.escrowId %></dd>
+            </div>
+          </dl>
+
+          <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <% if (c.fundingTxHash) { %>
+              <a href="https://sepolia.etherscan.io/tx/<%= c.fundingTxHash %>" target="_blank" rel="noopener"
+                 class="text-emerald-700 hover:underline" dir="ltr">tx: funding ↗</a>
+            <% } %>
+            <% if (c.resolveTxHash) { %>
+              <a href="https://sepolia.etherscan.io/tx/<%= c.resolveTxHash %>" target="_blank" rel="noopener"
+                 class="text-emerald-700 hover:underline" dir="ltr">tx: resolve ↗</a>
+            <% } %>
+            <span class="text-stone-400">شواهد ثبت‌شده: <%= (c.evidence || []).length %></span>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <% if (c.status === 'FUNDED') { %>
+              <button type="button" class="btn-dispute rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium px-4 py-2 text-sm transition" data-case-id="<%= c.id %>">
+                اعلام اختلاف (داوری حَکَم)
+              </button>
+            <% } %>
+            <details class="w-full">
+              <summary class="cursor-pointer select-none inline-flex rounded-lg border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 font-medium px-4 py-2 text-sm transition">
+                افزودن شاهد (فقط هش SHA-256)
+              </summary>
+              <form class="form-evidence mt-3 rounded-xl bg-stone-50 border border-stone-200 p-4 grid gap-3" data-case-id="<%= c.id %>">
+                <div>
+                  <label class="block text-xs font-medium text-stone-600 mb-1">انتخاب فایل شاهد (قرارداد، پیام‌ها، فاکتور…)</label>
+                  <input type="file" required class="block w-full text-xs text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:px-3 file:py-1.5 file:text-xs file:font-medium file:cursor-pointer">
+                  <p class="mt-1 text-[11px] text-stone-400">فایل هرگز آپلود نمی‌شود؛ فقط هش SHA-256 آن در سرور ذخیره می‌شود تا اصالت سند قابل اثبات باشد.</p>
+                </div>
+                <textarea class="ev-note w-full rounded-lg border border-stone-300 px-3 py-2 text-xs" rows="2" placeholder="توضیح کوتاه درباره این شاهد (اختیاری)"></textarea>
+                <button type="submit" class="justify-self-start rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 text-sm transition">محاسبه هش و ثبت شاهد</button>
+              </form>
+            </details>
+          </div>
+        </article>
+      <% }); %>
+    </div>
+  </section>
+</main>
+
+<script type="application/json" id="page-data"><%- JSON.stringify(pageData) %></script>
+<script src="/js/app.js" defer></script>
+<%- include('partials/footer') %>
+</body>
+</html>

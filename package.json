@@ -1,0 +1,37 @@
+{
+  "name": "hakamchain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HakamChain (حَکَم‌چین) — Islamic-jurisprudence arbitration & escrow layer. MVP demo: Solidity escrow on Sepolia + Express/EJS admin panel where the platform acts as the حَکَم (arbiter).",
+  "license": "MIT",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "compile": "hardhat compile",
+    "test:chain": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0",
+    "cookie-session": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "ethers": "^6.13.4",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "chai": "^4.4.1",
+    "hardhat": "^2.22.17"
+  }
+}

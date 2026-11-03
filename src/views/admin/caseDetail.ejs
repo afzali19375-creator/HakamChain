@@ -1,0 +1,151 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+  <div class="flex items-center justify-between gap-3">
+    <div>
+      <a href="/admin" class="text-xs text-emerald-700 hover:underline">← بازگشت به داشبورد</a>
+      <h1 class="mt-1 text-xl font-extrabold text-stone-900">
+        پرونده <span class="font-mono text-stone-400" dir="ltr">#<%= kase.id %></span> — <%= kase.title %>
+      </h1>
+    </div>
+    <span class="rounded-full border px-3 py-1.5 text-sm font-semibold <%= statusClass[kase.status] %>"><%= statusFa[kase.status] %></span>
+  </div>
+
+  <!-- ===== اطلاعات پرونده ===== -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm">
+    <div class="p-6 border-b border-stone-100">
+      <h2 class="font-extrabold text-stone-900 mb-3">اطلاعات قرارداد</h2>
+      <p class="text-sm text-stone-600 leading-7 whitespace-pre-line"><%= kase.description %></p>
+    </div>
+    <dl class="grid sm:grid-cols-2 gap-4 p-6 text-sm">
+      <div class="rounded-xl bg-stone-50 border border-stone-100 p-4">
+        <dt class="text-xs text-stone-400 mb-1">کارفرما (واریزکننده امانت)</dt>
+        <dd class="flex items-center justify-between gap-2">
+          <code class="font-mono text-xs text-stone-800 break-all" dir="ltr"><%= kase.employerAddress %></code>
+          <button type="button" class="btn-copy shrink-0 text-xs text-stone-400 hover:text-emerald-700" data-copy="<%= kase.employerAddress %>">کپی</button>
+        </dd>
+      </div>
+      <div class="rounded-xl bg-stone-50 border border-stone-100 p-4">
+        <dt class="text-xs text-stone-400 mb-1">مجری (گیرنده احتمالی وجه)</dt>
+        <dd class="flex items-center justify-between gap-2">
+          <code class="font-mono text-xs text-stone-800 break-all" dir="ltr"><%= kase.contractorAddress %></code>
+          <button type="button" class="btn-copy shrink-0 text-xs text-stone-400 hover:text-emerald-700" data-copy="<%= kase.contractorAddress %>">کپی</button>
+        </dd>
+      </div>
+      <div class="rounded-xl bg-stone-50 border border-stone-100 p-4">
+        <dt class="text-xs text-stone-400 mb-1">مبلغ امانت‌گذاری‌شده</dt>
+        <dd class="font-mono font-bold text-emerald-700" dir="ltr"><%= kase.amountEth %> ETH <span class="text-stone-400 font-normal text-xs">(<%= kase.amountWei %> wei)</span></dd>
+      </div>
+      <div class="rounded-xl bg-stone-50 border border-stone-100 p-4">
+        <dt class="text-xs text-stone-400 mb-1">شناسه قرارداد هوشمند (escrowId)</dt>
+        <dd class="font-mono" dir="ltr">#<%= kase.escrowId == null ? '-' : kase.escrowId %></dd>
+      </div>
+      <div class="rounded-xl bg-stone-50 border border-stone-100 p-4 sm:col-span-2">
+        <dt class="text-xs text-stone-400 mb-1">تراکنش‌ها روی Sepolia</dt>
+        <dd class="flex flex-wrap gap-4 text-xs">
+          <% if (kase.fundingTxHash) { %>
+            <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="https://sepolia.etherscan.io/tx/<%= kase.fundingTxHash %>">funding ↗</a>
+          <% } %>
+          <% if (kase.resolveTxHash) { %>
+            <a class="text-emerald-700 hover:underline font-mono" dir="ltr" target="_blank" rel="noopener" href="https://sepolia.etherscan.io/tx/<%= kase.resolveTxHash %>">resolve ↗</a>
+          <% } %>
+          <% if (!kase.fundingTxHash && !kase.resolveTxHash) { %><span class="text-stone-400">—</span><% } %>
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ===== شواهد ===== -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm">
+    <div class="p-6 border-b border-stone-100 flex items-center justify-between">
+      <h2 class="font-extrabold text-stone-900">شواهد طرفین (هش SHA-256)</h2>
+      <span class="text-xs text-stone-400"><%= (kase.evidence || []).length %> مورد</span>
+    </div>
+    <% if ((kase.evidence || []).length === 0) { %>
+      <div class="p-6 text-sm text-stone-400">شاهدی ثبت نشده است.</div>
+    <% } else { %>
+      <ul class="divide-y divide-stone-100">
+        <% kase.evidence.forEach(function (ev) { %>
+          <li class="p-5 text-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-medium text-stone-800"><%= ev.fileName %></span>
+              <span class="text-xs text-stone-400"><%= new Date(ev.createdAt).toLocaleDateString('fa-IR') %> — <%= ev.uploaderAddress.slice(0, 6) %>…<%= ev.uploaderAddress.slice(-4) %></span>
+            </div>
+            <div class="mt-1.5 flex items-center gap-2">
+              <code class="font-mono text-xs text-stone-500 break-all" dir="ltr"><%= ev.fileHash %></code>
+              <button type="button" class="btn-copy shrink-0 text-xs text-stone-400 hover:text-emerald-700" data-copy="<%= ev.fileHash %>">کپی</button>
+            </div>
+            <% if (ev.note) { %><p class="mt-1.5 text-xs text-stone-500"><%= ev.note %></p><% } %>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+    <details class="border-t border-stone-100">
+      <summary class="cursor-pointer select-none px-6 py-4 text-sm text-emerald-700 font-medium">افزودن شاهد از سوی حَکَم (مستندات جلسه داوری…)</summary>
+      <form class="form-evidence px-6 pb-6 grid gap-3" data-case-id="<%= kase.id %>">
+        <input type="file" required class="block w-full text-xs text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:px-3 file:py-1.5 file:text-xs file:font-medium file:cursor-pointer">
+        <textarea class="ev-note w-full rounded-lg border border-stone-300 px-3 py-2 text-xs" rows="2" placeholder="توضیح کوتاه (اختیاری)"></textarea>
+        <button type="submit" class="justify-self-start rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 text-sm transition">محاسبه هش و ثبت</button>
+      </form>
+    </details>
+  </section>
+
+  <% if (kase.decisionNote) { %>
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6">
+    <h2 class="font-extrabold text-stone-900 mb-2">مبنای حکم صادرشده</h2>
+    <p class="text-sm text-stone-600 leading-7 whitespace-pre-line"><%= kase.decisionNote %></p>
+    <p class="mt-2 text-xs text-stone-400">صدور توسط: <code class="font-mono" dir="ltr"><%= kase.resolvedBy %></code></p>
+  </section>
+  <% } %>
+
+  <!-- ===== صدور حکم ===== -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm">
+    <div class="p-6 border-b border-stone-100">
+      <h2 class="font-extrabold text-stone-900">صدور حکم و اجرای آن روی زنجیره</h2>
+      <p class="mt-1 text-sm text-stone-500 leading-6">
+        پس از بررسی فقهی/فنی شواهد، حکم را ثبت کنید. با کلیک روی هر دکمه، بک‌اند با ولت ادمین تابع
+        <code class="font-mono text-xs" dir="ltr">releaseFunds(<%= kase.escrowId == null ? 'id' : kase.escrowId %>, …)</code>
+        را روی شبکه Sepolia اجرا می‌کند و وجه مستقیماً به ولت برنده منتقل می‌شود.
+      </p>
+    </div>
+
+    <% if (['RESOLVED_EMPLOYER', 'RESOLVED_CONTRACTOR'].includes(kase.status)) { %>
+      <div class="p-6 text-sm rounded-b-2xl bg-emerald-50 text-emerald-800">
+        این پرونده حل‌وفصل شده است؛ حکم روی زنجیره اجرا شده و وجه آزاد/بازپرداخت شده است.
+      </div>
+    <% } else { %>
+      <div class="p-6 space-y-4">
+        <% if (!pageData.web3Ready) { %>
+          <div class="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm">
+            بلاکچین پیکربندی نشده است؛ ابتدا قرارداد را دیپلوی کنید و متغیرهای <span dir="ltr" class="font-mono">CONTRACT_ADDRESS</span> و <span dir="ltr" class="font-mono">ADMIN_PRIVATE_KEY</span> را تنظیم کنید.
+          </div>
+        <% } %>
+        <div>
+          <label for="decision-note" class="block text-sm font-medium text-stone-700 mb-1">مبنای حکم (یادداشت داخلی — مستند در پرونده)</label>
+          <textarea id="decision-note" rows="3" placeholder="مثلاً: با توجه به بینه‌های ارائه‌شده و اقرار مجری به عدم تحویل به‌موقع…"
+                    class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button type="button" class="btn-resolve flex-1 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-5 py-3.5 transition shadow-sm"
+                  data-decision="EMPLOYER" <%= pageData.web3Ready ? '' : 'disabled' %>>
+            تایید و بازپرداخت وجه به کارفرما
+          </button>
+          <button type="button" class="btn-resolve flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-5 py-3.5 transition shadow-sm"
+                  data-decision="CONTRACTOR" <%= pageData.web3Ready ? '' : 'disabled' %>>
+            تایید و آزادسازی وجه به مجری
+          </button>
+        </div>
+        <p class="text-xs text-stone-400 leading-5">هشدار: این عملیات تراکنش واقعی روی Sepolia صادر می‌کند و کارمزد گاز از ولت ادمین کسر می‌شود. این حکم پس از اجرا قابل بازگشت نیست.</p>
+        <p id="resolve-result" class="text-sm hidden rounded-xl px-4 py-3"></p>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<script type="application/json" id="page-data"><%- JSON.stringify(pageData) %></script>
+<script src="/js/app.js" defer></script>
+<%- include('../partials/footer') %>
+</body>
+</html>

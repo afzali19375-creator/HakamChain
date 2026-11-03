@@ -1,0 +1,23 @@
+<nav class="bg-white/90 backdrop-blur border-b border-stone-200 sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+    <a href="/" class="flex items-center gap-2.5 group">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-extrabold shadow-sm group-hover:bg-emerald-700 transition">ح</span>
+      <span class="font-extrabold text-emerald-900 text-lg">حَکَم‌چین</span>
+      <span class="hidden md:inline text-[11px] text-stone-400 border border-stone-200 rounded-full px-2 py-0.5">HakamChain MVP · Sepolia</span>
+    </a>
+    <div class="flex items-center gap-3 text-sm">
+      <% if (address) { %>
+        <% if (role === 'admin') { %>
+          <a href="/admin" class="text-stone-600 hover:text-emerald-700">داشبورد حَکَم</a>
+          <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 text-xs font-semibold">حَکَم</span>
+        <% } else { %>
+          <a href="/portal" class="text-stone-600 hover:text-emerald-700">پرونده‌های من</a>
+        <% } %>
+        <span class="hidden sm:inline font-mono text-xs text-stone-500 bg-stone-100 rounded-md px-2 py-1" dir="ltr"><%= address.slice(0, 6) %>…<%= address.slice(-4) %></span>
+        <button id="btn-logout" class="text-stone-400 hover:text-rose-600 transition" title="خروج">خروج</button>
+      <% } else { %>
+        <a href="/login" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 font-medium transition">ورود با کیف پول</a>
+      <% } %>
+    </div>
+  </div>
+</nav>

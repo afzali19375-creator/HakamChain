@@ -1,0 +1,84 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-8">
+
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-extrabold text-stone-900">داشبورد حَکَم</h1>
+      <p class="mt-1 text-sm text-stone-500">مشاهده همه پرونده‌های در جریان و حل‌وفصل‌شده — ورود با حاکمیت قضایی فقهی پلتفرم.</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs text-stone-500">
+      <% if (!pageData.web3Ready) { %>
+        <span class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5">بلاکچین پیکربندی نشده — دکمه‌های حکم غیرفعال‌اند</span>
+      <% } else { %>
+        <span class="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5">متصل به Sepolia ✓</span>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- آمار -->
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+      <div class="text-xs text-stone-400">کل پرونده‌ها</div>
+      <div class="mt-1 text-3xl font-extrabold text-stone-900"><%= stats.total %></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+      <div class="text-xs text-stone-400">در جریان داوری</div>
+      <div class="mt-1 text-3xl font-extrabold text-amber-600"><%= stats.open %></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+      <div class="text-xs text-stone-400">حل‌وفصل‌شده</div>
+      <div class="mt-1 text-3xl font-extrabold text-emerald-600"><%= stats.resolved %></div>
+    </div>
+  </div>
+
+  <!-- فهرست -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-stone-100">
+      <h2 class="font-extrabold text-stone-900">پرونده‌ها</h2>
+    </div>
+    <% if (cases.length === 0) { %>
+      <div class="p-10 text-center text-stone-400 text-sm">هنوز پرونده‌ای ثبت نشده است.</div>
+    <% } else { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-stone-500 text-xs">
+            <tr>
+              <th class="text-right font-medium px-5 py-3">#</th>
+              <th class="text-right font-medium px-5 py-3">عنوان</th>
+              <th class="text-right font-medium px-5 py-3">کارفرما</th>
+              <th class="text-right font-medium px-5 py-3">مجری</th>
+              <th class="text-right font-medium px-5 py-3">مبلغ (ETH)</th>
+              <th class="text-right font-medium px-5 py-3">شواهد</th>
+              <th class="text-right font-medium px-5 py-3">وضعیت</th>
+              <th class="text-right font-medium px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-100">
+            <% cases.forEach(function (c) { %>
+              <tr class="hover:bg-stone-50/60 transition">
+                <td class="px-5 py-3 font-mono text-stone-400" dir="ltr"><%= c.id %></td>
+                <td class="px-5 py-3 font-medium text-stone-800 max-w-56 truncate"><%= c.title %></td>
+                <td class="px-5 py-3 font-mono text-xs text-stone-500" dir="ltr"><%= c.employerAddress.slice(0, 6) %>…<%= c.employerAddress.slice(-4) %></td>
+                <td class="px-5 py-3 font-mono text-xs text-stone-500" dir="ltr"><%= c.contractorAddress.slice(0, 6) %>…<%= c.contractorAddress.slice(-4) %></td>
+                <td class="px-5 py-3 font-mono text-emerald-700" dir="ltr"><%= c.amountEth %></td>
+                <td class="px-5 py-3 text-stone-500"><%= (c.evidence || []).length %></td>
+                <td class="px-5 py-3"><span class="rounded-full border px-2.5 py-1 text-xs font-semibold <%= statusClass[c.status] %>"><%= statusFa[c.status] %></span></td>
+                <td class="px-5 py-3">
+                  <a href="/admin/cases/<%= c.id %>" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 transition">بررسی و صدور حکم</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<script type="application/json" id="page-data"><%- JSON.stringify(pageData) %></script>
+<script src="/js/app.js" defer></script>
+<%- include('../partials/footer') %>
+</body>
+</html>

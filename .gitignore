@@ -1,0 +1,32 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Hardhat build artifacts
+artifacts/
+cache/
+coverage/
+coverage.json
+typechain-types/
+
+# Deployment records (regenerated on deploy)
+deployments/
+
+# SQLite database files
+data/
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
