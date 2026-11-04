@@ -73,7 +73,7 @@
           ],
         });
       } else {
-        throw new Error(`لطفاً کیف پول را روی شبکه ${net.name} قرار دهید.`);
+        throw new Error(friendlyWalletError(err));
       }
     }
   }
@@ -87,9 +87,18 @@
 
   async function connect() {
     const provider = await getWallet();
-    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    let accounts;
+    try {
+      accounts = await provider.request({ method: 'eth_requestAccounts' });
+    } catch (err) {
+      throw new Error(friendlyWalletError(err));
+    }
     if (!accounts || !accounts.length) throw new Error('هیچ حسابی در کیف پول انتخاب نشد.');
-    await ensureNetwork();
+    try {
+      await ensureNetwork();
+    } catch (err) {
+      throw new Error(friendlyWalletError(err));
+    }
     return accounts[0];
   }
 
@@ -133,6 +142,24 @@
       btn.disabled = false;
       if (btn.dataset.label) btn.textContent = btn.dataset.label;
     }
+  }
+
+  /** Map raw wallet errors to beginner-friendly Persian messages. */
+  function friendlyWalletError(err) {
+    if (err && err.code === 4001) {
+      return 'درخواست در MetaMask رد شد؛ دوباره دکمه را بزن و این بار در پنجره MetaMask روی تایید/Connect بزن.';
+    }
+    const raw = String((err && err.message) || '');
+    if (
+      raw.includes('fetch chain ID') ||
+      raw.includes('Unrecognized chain') ||
+      raw.includes('Custom network') ||
+      raw.includes('check that your RPC URL') ||
+      raw.toLowerCase().includes('rpc')
+    ) {
+      return 'بلاکچین محلی در دسترس نیست. اول پنجره «npx hardhat node» را روشن کن؛ بعد در MetaMask از Add network ← Add network manually شبکه‌ای بساز با RPC: http://127.0.0.1:8545 و Chain ID: 31337 و Currency: ETH، بعد صفحه را رفرش کن.';
+    }
+    return raw || 'خطای نامشخص از کیف پول.';
   }
 
   /** SHA-256 of a File, computed locally — the file never leaves the device. */
@@ -192,6 +219,7 @@
 
     btn.addEventListener('click', async () => {
       setBusy(btn, true, 'در حال اتصال…');
+      if (status) status.classList.remove('text-rose-600');
       try {
         say('اتصال کیف پول و بررسی شبکه…');
         const address = (await connect()).toLowerCase();
@@ -215,8 +243,10 @@
         say('ورود موفق! در حال انتقال…');
         window.location.href = '/';
       } catch (err) {
-        say('');
-        toast(err.message || 'ورود ناموفق بود.', false);
+        const msg = friendlyWalletError(err);
+        say(msg);
+        if (status) status.classList.add('text-rose-600');
+        toast(msg, false);
         setBusy(btn, false);
       }
     });
@@ -381,9 +411,10 @@
       btn.addEventListener('click', async () => {
         const decision = btn.dataset.decision; // 'EMPLOYER' | 'CONTRACTOR'
         const label = decision === 'EMPLOYER' ? 'بازپرداخت وجه به کارفرما' : 'آزادسازی وجه به مجری';
+        const netLabel = PAGE.chainId === 11155111 ? 'شبکه Sepolia' : 'شبکه محلی دمو';
         if (
           !window.confirm(
-            `حکم نهایی: ${label}\n\nبا تایید، تراکنش واقعی روی Sepolia از ولت ادمین ارسال می‌شود و غیرقابل بازگشت است. ادامه می‌دهید؟`
+            `حکم نهایی: ${label}\n\nبا تایید، تراکنش واقعی روی ${netLabel} از ولت ادمین ارسال می‌شود و غیرقابل بازگشت است. ادامه می‌دهید؟`
           )
         ) {
           return;

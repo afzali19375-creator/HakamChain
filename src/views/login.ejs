@@ -29,6 +29,19 @@
         </ol>
         <p class="mt-2">دسترسی پنل حَکَم فقط به آدرس‌های تعریف‌شده در <span dir="ltr" class="font-mono">ADMIN_ADDRESSES</span> داده می‌شود.</p>
       </div>
+
+      <% if (net.id !== 11155111) { %>
+      <div class="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-900 leading-6">
+        <p class="font-semibold mb-1">اگر اتصال خودکار شبکه کار نکرد (روش دستی):</p>
+        <p>
+          در MetaMask: <b>Add network ← Add network manually</b> —
+          RPC: <span dir="ltr" class="font-mono">http://127.0.0.1:8545</span> —
+          Chain ID: <span dir="ltr" class="font-mono"><%= net.id %></span> —
+          Symbol: <span dir="ltr" class="font-mono">ETH</span>.
+          بعد صفحه را رفرش کنید. (توجه: پنجره بلاکچین محلی <span dir="ltr">npx hardhat node</span> باید روشن باشد)
+        </p>
+      </div>
+      <% } %>
     </div>
     <p class="mt-4 text-center text-xs text-stone-400">
       <% if (net.explorerTx) { %>

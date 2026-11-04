@@ -19,6 +19,13 @@ const crypto = require('crypto');
 const fs = require('fs');
 const { ethers } = require('ethers');
 
+// Guard: this suite must run via `bash test/run-e2e.sh` (which boots the
+// chain + server first). When another tool loads this file as a module —
+// e.g. Hardhat's `test` task loads every *.js under test/ — skip entirely.
+if (require.main !== module) {
+  module.exports = {};
+} else {
+
 const API = 'http://127.0.0.1:3000';
 const RPC = 'http://127.0.0.1:8545';
 const CHAIN_ID = 31337;
@@ -258,3 +265,5 @@ const rawBalance = async (addr) => BigInt(await provider.send('eth_getBalance', 
   console.error('E2E crashed:', err);
   process.exit(1);
 });
+
+} // end of require.main guard

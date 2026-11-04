@@ -12,6 +12,10 @@ module.exports = {
   },
   networks: {
     hardhat: { chainId: 31337 },
+    localhost: {
+      chainId: 31337,
+      url: 'http://127.0.0.1:8545',
+    },
     sepolia: {
       chainId: 11155111,
       // Any Sepolia RPC works; the public one needs no API key.

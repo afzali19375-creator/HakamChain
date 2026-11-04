@@ -50,7 +50,42 @@ async function main() {
   };
   fs.writeFileSync(path.join(dir, `${network.name}.json`), JSON.stringify(record, null, 2));
   console.log(`Saved → deployments/${network.name}.json`);
-  console.log(`\nNext step: add this line to your .env file:\n  CONTRACT_ADDRESS=${address}`);
+
+  // ------------------------------------------------------------------
+  // Auto-sync .env so the backend immediately uses this contract address.
+  // On a local Hardhat deploy this is fully hands-free: if .env does not
+  // exist yet, a ready-to-use one is created with the well-known demo keys.
+  // ------------------------------------------------------------------
+  const envPath = path.join(__dirname, '..', '.env');
+  if (network.name === 'localhost' && !fs.existsSync(envPath)) {
+    const defaults = [
+      'NODE_ENV=development',
+      'PORT=3000',
+      'SESSION_SECRET=hakamchain-local-secret-123',
+      `CHAIN_ID=${network.config.chainId ?? 31337}`,
+      'RPC_URL_SEPOLIA=http://127.0.0.1:8545',
+      'ADMIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+      `ADMIN_ADDRESSES=${deployer.address.toLowerCase()}`,
+      `CONTRACT_ADDRESS=${address}`,
+      'DB_STORAGE=./data/hakamchain.sqlite',
+      '',
+    ];
+    fs.writeFileSync(envPath, defaults.join('\n'));
+    console.log('Created a ready-to-use .env with local demo defaults ✓');
+  } else if (fs.existsSync(envPath)) {
+    let envContent = fs.readFileSync(envPath, 'utf8');
+    const line = `CONTRACT_ADDRESS=${address}`;
+    if (/^CONTRACT_ADDRESS=.*$/m.test(envContent)) {
+      envContent = envContent.replace(/^CONTRACT_ADDRESS=.*$/m, line);
+    } else {
+      if (envContent && !envContent.endsWith('\n')) envContent += '\n';
+      envContent += `${line}\n`;
+    }
+    fs.writeFileSync(envPath, envContent);
+    console.log(`.env updated → ${line}`);
+  } else {
+    console.log(`\nNext step: add this line to your .env file:\n  CONTRACT_ADDRESS=${address}`);
+  }
 }
 
 main().catch((error) => {

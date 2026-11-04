@@ -31,6 +31,7 @@ echo "      contract at $ADDR"
 echo "[3/5] Pointing .env at the local deployment…"
 sed -i '/^CONTRACT_ADDRESS=/d' .env
 echo "CONTRACT_ADDRESS=$ADDR" >> .env
+sed -i 's#^DB_STORAGE=.*#DB_STORAGE=./data/e2e-test.sqlite#' .env
 
 echo "[4/5] Starting API server on :3000…"
 node src/server.js > /tmp/server.log 2>&1 &
